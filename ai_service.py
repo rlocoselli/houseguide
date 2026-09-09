@@ -11,7 +11,7 @@ class AIError(Exception):
         self.code, self.status = code, status
 
 def configured():
-    return bool(os.getenv('KIMI_API_KEY') and os.getenv('KIMI_MODEL'))
+    return bool(os.getenv('KIMI_API_KEY'))
 
 def completion(system, data):
     if not configured():
@@ -23,7 +23,7 @@ def completion(system, data):
         response = requests.post(base + '/chat/completions', headers={
             'Authorization': 'Bearer ' + os.environ['KIMI_API_KEY'],
             'Content-Type': 'application/json'}, json={
-                'model': os.environ['KIMI_MODEL'],
+                'model': os.getenv('KIMI_MODEL', 'kimi-k2.5'),
                 'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': json.dumps(data, ensure_ascii=False)}],
                 'response_format': {'type': 'json_object'},
                 'max_tokens': int(os.getenv('KIMI_MAX_TOKENS', '8192')),
