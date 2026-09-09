@@ -11,32 +11,30 @@ class AIError(Exception):
         self.code, self.status = code, status
 
 def configured():
-    return bool(os.getenv('KIMI_API_KEY'))
+    return bool(os.getenv('GEMINI_API_KEY'))
 
 def completion(system, data):
     if not configured():
         raise AIError('ai_not_configured', 503)
-    base = os.getenv('KIMI_BASE_URL', 'https://api.moonshot.ai/v1').rstrip('/')
+    base = os.getenv('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta').rstrip('/')
     if not base.startswith('https://'):
         raise AIError('ai_not_configured', 503)
     try:
-        response = requests.post(base + '/chat/completions', headers={
-            'Authorization': 'Bearer ' + os.environ['KIMI_API_KEY'],
+        model = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+        response = requests.post(base + '/models/' + model + ':generateContent', params={'key': os.environ['GEMINI_API_KEY']}, headers={
             'Content-Type': 'application/json'}, json={
-                'model': os.getenv('KIMI_MODEL', 'kimi-k2.5'),
-                'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': json.dumps(data, ensure_ascii=False)}],
-                'response_format': {'type': 'json_object'},
-                'max_tokens': int(os.getenv('KIMI_MAX_TOKENS', '8192')),
-                'thinking': {'type': 'disabled'},
-            }, timeout=(10, int(os.getenv('KIMI_TIMEOUT_SECONDS', '90'))), allow_redirects=False)
+                'system_instruction': {'parts': [{'text': system}]},
+                'contents': [{'parts': [{'text': json.dumps(data, ensure_ascii=False)}]}],
+                'generationConfig': {'responseMimeType': 'application/json', 'maxOutputTokens': int(os.getenv('GEMINI_MAX_TOKENS', '8192'))},
+            }, timeout=(10, int(os.getenv('GEMINI_TIMEOUT_SECONDS', '90'))), allow_redirects=False)
         if response.status_code == 429:
             raise AIError('ai_rate_limit', 429)
         if response.status_code != 200:
             raise AIError('ai_provider_error')
-        choice = response.json()['choices'][0]
-        if choice.get('finish_reason') != 'stop':
+        candidate = response.json()['candidates'][0]
+        if candidate.get('finishReason') not in (None, 'STOP'):
             raise AIError('ai_invalid_response')
-        result = json.loads(choice['message']['content'])
+        result = json.loads(''.join(part['text'] for part in candidate['content']['parts']))
         if not isinstance(result, dict):
             raise AIError('ai_invalid_response')
         return result
