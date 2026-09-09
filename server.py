@@ -205,6 +205,27 @@ def validated(d):
         if any(k not in ai_service.FIELDS or not isinstance(v, str) or len(v) > 10000 for k, v in content.items()): return None
     return result
 
+def auto_translate_content(content):
+    """Fill missing guide languages from the first completed language when AI is enabled."""
+    if not ai_service.configured() or not content:
+        return content
+    sources = [lang for lang, values in content.items() if isinstance(values, dict) and any(str(v).strip() for v in values.values())]
+    if not sources:
+        return content
+    source_lang = sources[0]
+    targets = [lang for lang in ai_service.LANGUAGES if lang != source_lang and not content.get(lang)]
+    if not targets:
+        return content
+    source = {key: value for key, value in content[source_lang].items() if isinstance(value, str) and value.strip()}
+    if not source:
+        return content
+    try:
+        translations = ai_service.translate(source, targets)
+        return {**content, **translations}
+    except ai_service.AIError:
+        app.logger.warning('automatic guide translation unavailable', exc_info=True)
+        return content
+
 @app.route('/api/properties', methods=['GET', 'POST'])
 @auth
 def properties():
@@ -215,6 +236,7 @@ def properties():
             return jsonify([dict(r['data'], code=r['code']) for r in rows])
         d = validated(request.get_json())
         if d is None: return jsonify(error='validation'), 400
+        d['content'] = auto_translate_content(d['content'])
         if d['published'] and os.getenv('BILLING_REQUIRED')=='1': raise ServiceError('subscription_required',402)
         code = secrets.token_hex(6).upper()
         c.execute(insert(property_table).values(code=code, owner=session['uid'], data=d))
@@ -236,6 +258,7 @@ def property_edit(code):
             return jsonify(ok=True)
         d = validated(request.get_json())
         if d is None: return jsonify(error='validation'), 400
+        d['content'] = auto_translate_content(d['content'])
         if d['published'] and not entitled(c,code): raise ServiceError('subscription_required',402)
         c.execute(update(property_table).where(condition).values(data=d))
         return jsonify(dict(d, code=code))
