@@ -18,8 +18,9 @@ export default function AIAssistant({t, lang, content, onApply, request, onBusy}
     finally {setBusy(false);onBusy(false)}
   }
   function apply() {
+    if(!proposal)return;
     const next=structuredClone(content);
-    if(proposal.kind==='rules')next[proposal.lang]={...next[proposal.lang],...proposal.fields};
+    if(proposal.kind==='rules'&&proposal.fields&&typeof proposal.fields==='object')next[proposal.lang]={...next[proposal.lang],...proposal.fields};
     else for(const [l,fields] of Object.entries(proposal.translations)) {
       next[l]={...next[l]};
       for(const [key,value] of Object.entries(fields))if(overwrite||!next[l][key]?.trim())next[l][key]=value;
@@ -33,7 +34,7 @@ export default function AIAssistant({t, lang, content, onApply, request, onBusy}
     <small>{t.aiPrivacy}</small>
     {busy&&<p role="status">{t.aiWorking}</p>}{error&&<p className="error" role="alert">{error}</p>}
     {proposal&&<div className="ai-proposal"><h4>{t.aiReview}</h4><p>{t.aiReviewHint}</p>
-      {proposal.kind==='translate'?<>{Object.entries(proposal.translations).map(([l,fields])=><details key={l}><summary>{languages[l]}</summary>{Object.entries(fields).map(([key,value])=><div key={key}><strong>{t[key]}</strong><p>{value}</p></div>)}</details>)}<label className="checkbox"><input type="checkbox" checked={overwrite} onChange={e=>setOverwrite(e.target.checked)}/>{t.aiOverwrite}</label></>:<>{Object.entries(proposal.fields).map(([key,value])=><div key={key}><strong>{t[key]}</strong><p>{value}</p></div>)}</>}
+      {proposal.kind==='translate'?<>{Object.entries(proposal.translations||{}).map(([l,fields])=><details key={l}><summary>{languages[l]}</summary>{Object.entries(fields||{}).map(([key,value])=><div key={key}><strong>{t[key]||key}</strong><p>{value}</p></div>)}</details>)}<label className="checkbox"><input type="checkbox" checked={overwrite} onChange={e=>setOverwrite(e.target.checked)}/>{t.aiOverwrite}</label></>:<>{Object.entries(proposal.fields||{}).map(([key,value])=><div key={key}><strong>{t[key]||key}</strong><p>{value}</p></div>)}</>}
       <div className="ai-actions"><button type="button" className="primary" onClick={apply}><Check size={16}/>{t.aiApply}</button><button type="button" className="secondary" onClick={()=>setProposal(null)}><X size={16}/>{t.cancel}</button></div>
     </div>}
   </section>
