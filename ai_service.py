@@ -22,7 +22,7 @@ def completion(system, data):
     if not base.startswith('https://'):
         raise AIError('ai_not_configured', 503)
     try:
-        model = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+        model = os.getenv('GEMINI_MODEL', 'gemini-3.6-flash')
         response = requests.post(base + '/models/' + model + ':generateContent', params={'key': os.environ['GEMINI_API_KEY']}, headers={
             'Content-Type': 'application/json'}, json={
                 'systemInstruction': {'parts': [{'text': system}]},
