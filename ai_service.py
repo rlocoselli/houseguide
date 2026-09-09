@@ -23,7 +23,7 @@ def completion(system, data):
         model = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
         response = requests.post(base + '/models/' + model + ':generateContent', params={'key': os.environ['GEMINI_API_KEY']}, headers={
             'Content-Type': 'application/json'}, json={
-                'system_instruction': {'parts': [{'text': system}]},
+                'systemInstruction': {'parts': [{'text': system}]},
                 'contents': [{'parts': [{'text': json.dumps(data, ensure_ascii=False)}]}],
                 'generationConfig': {'responseMimeType': 'application/json', 'maxOutputTokens': int(os.getenv('GEMINI_MAX_TOKENS', '8192'))},
             }, timeout=(10, int(os.getenv('GEMINI_TIMEOUT_SECONDS', '90'))), allow_redirects=False)
