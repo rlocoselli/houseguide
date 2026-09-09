@@ -1,10 +1,12 @@
 """Kimi calls stay server-side. AI output is a proposal, never an automatic write."""
 import json
+import logging
 import os
 import requests
 
 LANGUAGES = {'pt': 'Portuguese', 'it': 'Italian', 'en': 'English', 'de': 'German', 'fr': 'French', 'es': 'Spanish'}
 FIELDS = {'welcomeText', 'parking', 'waste', 'checkout', 'rules', 'restaurants', 'emergency'}
+logger = logging.getLogger(__name__)
 
 class AIError(Exception):
     def __init__(self, code, status=502):
@@ -30,6 +32,7 @@ def completion(system, data):
         if response.status_code == 429:
             raise AIError('ai_rate_limit', 429)
         if response.status_code != 200:
+            logger.warning('Gemini API returned status=%s body=%s', response.status_code, response.text[:500])
             raise AIError('ai_provider_error')
         candidate = response.json()['candidates'][0]
         if candidate.get('finishReason') not in (None, 'STOP'):
