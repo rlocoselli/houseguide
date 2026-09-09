@@ -188,9 +188,9 @@ def me():
 
 def validated(d):
     if not isinstance(d, dict): return None
-    defaults = {'name': '', 'location': '', 'image': '', 'published': False, 'content': {}, 'wifi': '', 'password': '', 'checkout': '11:00', 'images': []}
+    defaults = {'name': '', 'location': '', 'image': '', 'published': False, 'content': {}, 'wifi': '', 'password': '', 'checkin': '15:00', 'checkout': '11:00', 'images': []}
     result = {k: d.get(k, v) for k, v in defaults.items()}
-    if any(not isinstance(result[k], str) or len(result[k]) > 2000 for k in ('name', 'location', 'image', 'wifi', 'password', 'checkout')): return None
+    if any(not isinstance(result[k], str) or len(result[k]) > 2000 for k in ('name', 'location', 'image', 'wifi', 'password', 'checkin', 'checkout')): return None
     if not result['name'].strip() or not isinstance(result['published'], bool) or not isinstance(result['content'], dict): return None
     if not isinstance(result['images'],list) or len(result['images'])>12: return None
     for url in [result['image']]+result['images']:
