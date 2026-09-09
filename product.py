@@ -204,14 +204,16 @@ def setup_product(app,auth):
         rate_limit('places:'+str(session['uid']),20)
         key=os.getenv('GEOAPIFY_API_KEY')
         if not key: raise ServiceError('places_not_configured',503)
-        d=request.get_json();location=d.get('location');lang=d.get('lang','pt')
+        d=request.get_json();location=d.get('location');lang=d.get('lang','pt');category=d.get('category','restaurants')
         if not isinstance(location,str) or not 3<=len(location)<=300 or lang not in ('pt','it','en','de','fr','es'): raise ServiceError('validation')
+        categories={'restaurants':'catering.restaurant','supermarkets':'commercial.supermarket','shops':'commercial.shop','services':'service'}
+        if category not in categories: raise ServiceError('validation')
         try:
             geo=requests.get('https://api.geoapify.com/v1/geocode/search',params={'text':location,'limit':1,'lang':lang,'apiKey':key},timeout=15);geo.raise_for_status()
             features=geo.json().get('features',[])
             if not features: return jsonify(places=[],attribution='Geoapify / OpenStreetMap')
             lon,lat=features[0]['geometry']['coordinates']
-            r=requests.get('https://api.geoapify.com/v2/places',params={'categories':'catering.restaurant','filter':f'circle:{lon},{lat},1500','bias':f'proximity:{lon},{lat}','limit':10,'lang':lang,'apiKey':key},timeout=15);r.raise_for_status()
+            r=requests.get('https://api.geoapify.com/v2/places',params={'categories':categories[category],'filter':f'circle:{lon},{lat},1500','bias':f'proximity:{lon},{lat}','limit':10,'lang':lang,'apiKey':key},timeout=15);r.raise_for_status()
             items=[{'name':f['properties'].get('name','Restaurant'),'address':f['properties'].get('formatted','')} for f in r.json()['features']]
             return jsonify(places=items,attribution='Geoapify / OpenStreetMap',location=features[0]['properties'].get('formatted',location))
         except (requests.RequestException,ValueError,KeyError,TypeError): raise ServiceError('places_unavailable',502) from None
