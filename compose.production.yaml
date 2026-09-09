@@ -7,7 +7,7 @@ services:
       TRUST_PROXY_HOPS: "1"
       PUBLIC_LAUNCH: "1"
       BILLING_REQUIRED: "1"
-    command: ["sh", "-c", "python scripts/release_check.py && flask --app server init-db && exec gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 4 --timeout 120 server:app"]
+    command: ["sh", "-c", "python scripts/release_check.py && flask --app server init-db && exec gunicorn --bind 0.0.0.0:8000 --workers 2 --threads 4 --timeout 120 server:app"]
   proxy:
     image: caddy:2
     ports: ["80:80", "443:443"]

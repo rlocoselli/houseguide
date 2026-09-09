@@ -26,7 +26,7 @@ Monólito Flask + React compilado na mesma origem; PostgreSQL; interface em port
     npm run build
     npm run db:local
 
-Em outro terminal: npm start. Abra http://localhost:5000. O PostgreSQL local persiste em .local/postgres; as credenciais/porta estão em .env. O helper Node só é usado em desenvolvimento.
+Em outro terminal: npm start. Abra http://localhost:8000. O PostgreSQL local persiste em .local/postgres; as credenciais/porta estão em .env. O helper Node só é usado em desenvolvimento.
 
 Com PostgreSQL existente, use DATABASE_URL ou POSTGRES_HOST/PORT/DB/USER/PASSWORD. DATABASE_URL tem prioridade. SQLite só é permitido nos testes com TESTING=1.
 

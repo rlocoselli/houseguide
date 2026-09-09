@@ -13,7 +13,7 @@ Aplicação monolítica Flask + frontend compilado, PostgreSQL e armazenamento p
 
        docker compose -f compose.yaml -f compose.production.yaml up --build -d
 
-6. Caddy solicita e renova o certificado após DNS correto. O override esconde a porta 5000. Requer Docker Compose com suporte à tag !reset.
+6. Caddy solicita e renova o certificado após DNS correto. O override esconde a porta 8000. Requer Docker Compose com suporte à tag !reset.
 7. Verificar readiness, cadastro, e-mail, upload, pagamento em modo de teste, publicação e restauração antes de aceitar clientes.
 
 release_check.py exige configuração mínima. Variáveis preenchidas não comprovam contratos dos provedores ou conformidade jurídica. Docker/HTTPS não foram executados nesta máquina, que não possui Docker.

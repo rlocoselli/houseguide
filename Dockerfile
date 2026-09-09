@@ -17,5 +17,5 @@ COPY scripts ./scripts
 COPY --from=frontend /app/dist ./dist
 RUN useradd --create-home houseguide && mkdir -p /data/uploads /data/erasures /backups && chown -R houseguide:houseguide /app /data /backups
 USER houseguide
-EXPOSE 5000
-CMD ["sh", "-c", "flask --app server init-db && exec gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 4 --timeout 120 server:app"]
+EXPOSE 8000
+CMD ["sh", "-c", "flask --app server init-db && exec gunicorn --bind 0.0.0.0:8000 --workers 2 --threads 4 --timeout 120 server:app"]

@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(messa
 last_backup=0
 while True:
     try:
-        response=requests.get(os.getenv('HEALTHCHECK_URL','http://app:5000/health/ready'),timeout=10)
+        response=requests.get(os.getenv('HEALTHCHECK_URL','http://app:8000/health/ready'),timeout=10)
         if response.status_code!=200:raise RuntimeError('readiness_failed')
         if time.time()-last_backup>86400:
             maintain();backup();last_backup=time.time()
