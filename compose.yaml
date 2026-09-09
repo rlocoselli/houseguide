@@ -1,0 +1,75 @@
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT:-5000}:5000"
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      PG_DUMP_BIN: /usr/bin/pg_dump
+      PG_RESTORE_BIN: /usr/bin/pg_restore
+      PG_CLIENT_LIB_DIR: ""
+      ERASURE_DIR: /data/erasures
+      UPLOAD_DIR: /data/uploads
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
+    volumes:
+      - erasures:/data/erasures
+      - uploads:/data/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health/ready')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+    restart: unless-stopped
+  operations:
+    build: .
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      PG_DUMP_BIN: /usr/bin/pg_dump
+      PG_RESTORE_BIN: /usr/bin/pg_restore
+      PG_CLIENT_LIB_DIR: ""
+      ERASURE_DIR: /data/erasures
+      UPLOAD_DIR: /data/uploads
+      BACKUP_DIR: /backups
+    command: ["python", "scripts/operations.py"]
+    volumes:
+      - erasures:/data/erasures
+      - uploads:/data/uploads
+      - backups:/backups
+    depends_on:
+      app:
+        condition: service_healthy
+    logging: *logging
+    restart: unless-stopped
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-houseguide}
+      POSTGRES_USER: ${POSTGRES_USER:-houseguide}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    logging: *logging
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  uploads:
+  backups:
+  erasures:

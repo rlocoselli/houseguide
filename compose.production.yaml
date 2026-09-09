@@ -1,0 +1,22 @@
+services:
+  app:
+    ports: !reset []
+    environment:
+      PUBLIC_ORIGIN: https://houseguide.audeladedonnees.fr
+      HTTPS: "1"
+      TRUST_PROXY_HOPS: "1"
+      PUBLIC_LAUNCH: "1"
+      BILLING_REQUIRED: "1"
+    command: ["sh", "-c", "python scripts/release_check.py && flask --app server init-db && exec gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 4 --timeout 120 server:app"]
+  proxy:
+    image: caddy:2
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./ops/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+    restart: unless-stopped
+volumes:
+  caddy_data:
+  caddy_config:

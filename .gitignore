@@ -1,0 +1,36 @@
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+
+# Local configuration and secrets
+.secret
+.env
+.env.*
+!.env.example
+
+.venv/
+test-results/
+playwright-report/
+.local/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+
+# Logs and local tooling state
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db

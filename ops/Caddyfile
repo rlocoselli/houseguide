@@ -1,0 +1,11 @@
+{
+	email admin@audeladedonnees.fr
+}
+houseguide.audeladedonnees.fr {
+	encode zstd gzip
+	reverse_proxy app:5000
+	header {
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+	}
+}

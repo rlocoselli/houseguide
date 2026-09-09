@@ -1,0 +1,13 @@
+.env
+.env.*
+.secret
+*.sqlite3
+.venv
+node_modules
+dist
+.git
+__pycache__
+tests
+test-results
+.local
+playwright-report
